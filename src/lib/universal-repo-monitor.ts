@@ -1,21 +1,18 @@
-// Universal Repository Monitor - TPRM Integration
-// Handles monitoring of repositories, documents, and compliance data
+// Universal Repository Monitor Module
+// Provides monitoring capabilities for development repositories
 
 export interface UniversalRepositoryInfo {
   id: string;
   name: string;
-  url?: string;
-  path?: string;
-  type: 'github' | 'local' | 'document' | 'manual';
+  url: string;
+  type: 'github' | 'gitlab' | 'bitbucket' | 'custom';
   status: 'active' | 'inactive' | 'error';
-  lastUpdated: string;
-  metadata: {
-    language?: string;
-    framework?: string;
-    size?: number;
-    compliance?: ComplianceInfo;
-    risk?: RiskInfo;
-  };
+  lastActivity: string;
+  commitCount: number;
+  contributorCount: number;
+  language: string;
+  framework?: string;
+  description?: string;
 }
 
 export interface DocumentUpload {
@@ -34,432 +31,332 @@ export interface ManualEntry {
   id: string;
   repositoryId: string;
   field: string;
-  value: any;
-  source: 'user' | 'system' | 'ai';
+  value: string;
+  source: string;
   confidence: number;
   timestamp: string;
   notes?: string;
 }
 
-export interface ComplianceInfo {
-  soc2?: {
-    status: 'compliant' | 'non-compliant' | 'partial' | 'unknown';
-    score: number;
-    findings: string[];
-    lastAudit: string;
-  };
-  iso27001?: {
-    status: 'compliant' | 'non-compliant' | 'partial' | 'unknown';
-    score: number;
-    findings: string[];
-    lastAudit: string;
-  };
-  gdpr?: {
-    status: 'compliant' | 'non-compliant' | 'partial' | 'unknown';
-    score: number;
-    findings: string[];
-    lastAudit: string;
-  };
-  hipaa?: {
-    status: 'compliant' | 'non-compliant' | 'partial' | 'unknown';
-    score: number;
-    findings: string[];
-    lastAudit: string;
-  };
-  pciDss?: {
-    status: 'compliant' | 'non-compliant' | 'partial' | 'unknown';
-    score: number;
-    findings: string[];
-    lastAudit: string;
-  };
-}
+export class UniversalRepositoryMonitor {
+  private repositories: UniversalRepositoryInfo[] = [];
+  private documents: DocumentUpload[] = [];
+  private entries: ManualEntry[] = [];
 
-export interface RiskInfo {
-  overall: 'low' | 'medium' | 'high' | 'critical';
-  score: number;
-  factors: {
-    security: number;
-    compliance: number;
-    operational: number;
-    financial: number;
-    reputational: number;
-  };
-  recommendations: string[];
-  lastAssessment: string;
-}
-
-export interface MonitoringResult {
-  success: boolean;
-  data: UniversalRepositoryInfo;
-  analysis?: {
-    risk: RiskInfo;
-    compliance: ComplianceInfo;
-    recommendations: string[];
-  };
-  timestamp: string;
-}
-
-class UniversalRepositoryMonitor {
-  private instance: UniversalRepositoryMonitor | null = null;
-
-  constructor() {
-    // Singleton pattern
-    if (UniversalRepositoryMonitor.instance) {
-      return UniversalRepositoryMonitor.instance;
-    }
-    UniversalRepositoryMonitor.instance = this;
-  }
-
-  async monitorRepository(
-    input: string | DocumentUpload | ManualEntry,
-    options: {
-      forceMethod?: 'github' | 'local' | 'document' | 'manual';
-      additionalContext?: string;
-    } = {}
-  ): Promise<MonitoringResult> {
-    try {
-      let result: UniversalRepositoryInfo;
-      
-      if (typeof input === 'string') {
-        // URL or local path
-        if (input.startsWith('http') || input.startsWith('github.com')) {
-          result = await this.monitorGitHubRepository(input, options);
-        } else {
-          result = await this.monitorLocalRepository(input, options);
-        }
-      } else if ('filename' in input) {
-        // Document upload
-        result = await this.monitorDocument(input, options);
-      } else {
-        // Manual entry
-        result = await this.monitorManualEntry(input, options);
-      }
-
-      // Perform analysis
-      const analysis = await this.performAnalysis(result, options.additionalContext);
-
-      return {
-        success: true,
-        data: result,
-        analysis,
-        timestamp: new Date().toISOString()
-      };
-
-    } catch (error) {
-      console.error('Repository monitoring failed:', error);
-      throw new Error(`Failed to monitor repository: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  }
-
-  private async monitorGitHubRepository(
-    url: string,
-    options: any
-  ): Promise<UniversalRepositoryInfo> {
-    // Simulate GitHub repository monitoring
-    // In production, this would integrate with GitHub API
-    const repoId = this.generateId('github');
-    
-    return {
-      id: repoId,
-      name: this.extractRepoName(url),
-      url,
-      type: 'github',
+  async addRepository(repoInfo: Omit<UniversalRepositoryInfo, 'id' | 'status' | 'lastActivity'>): Promise<UniversalRepositoryInfo> {
+    const newRepo: UniversalRepositoryInfo = {
+      ...repoInfo,
+      id: `repo_${Date.now()}`,
       status: 'active',
-      lastUpdated: new Date().toISOString(),
-      metadata: {
-        language: 'TypeScript',
-        framework: 'Next.js',
-        size: Math.floor(Math.random() * 10000) + 1000,
-        compliance: this.generateComplianceInfo(),
-        risk: this.generateRiskInfo()
-      }
+      lastActivity: new Date().toISOString()
     };
+
+    this.repositories.push(newRepo);
+    return newRepo;
   }
 
-  private async monitorLocalRepository(
-    path: string,
-    options: any
-  ): Promise<UniversalRepositoryInfo> {
-    // Simulate local repository monitoring
-    const repoId = this.generateId('local');
-    
-    return {
-      id: repoId,
-      name: this.extractPathName(path),
-      path,
-      type: 'local',
-      status: 'active',
-      lastUpdated: new Date().toISOString(),
-      metadata: {
-        language: 'TypeScript',
-        framework: 'Next.js',
-        size: Math.floor(Math.random() * 5000) + 500,
-        compliance: this.generateComplianceInfo(),
-        risk: this.generateRiskInfo()
-      }
-    };
+  async getRepositories(): Promise<UniversalRepositoryInfo[]> {
+    return this.repositories;
   }
 
-  private async monitorDocument(
-    document: DocumentUpload,
-    options: any
-  ): Promise<UniversalRepositoryInfo> {
-    // Simulate document monitoring
-    const docId = this.generateId('document');
-    
-    return {
-      id: docId,
-      name: document.filename,
-      type: 'document',
-      status: 'active',
-      lastUpdated: new Date().toISOString(),
-      metadata: {
-        size: document.metadata.size,
-        compliance: this.analyzeDocumentCompliance(document),
-        risk: this.analyzeDocumentRisk(document)
-      }
-    };
+  async getRepository(id: string): Promise<UniversalRepositoryInfo | null> {
+    return this.repositories.find(repo => repo.id === id) || null;
   }
 
-  private async monitorManualEntry(
-    entry: ManualEntry,
-    options: any
-  ): Promise<UniversalRepositoryInfo> {
-    // Simulate manual entry processing
-    const entryId = this.generateId('manual');
-    
-    return {
-      id: entryId,
-      name: `Manual Entry - ${entry.field}`,
-      type: 'manual',
-      status: 'active',
-      lastUpdated: new Date().toISOString(),
-      metadata: {
-        compliance: this.generateComplianceInfo(),
-        risk: this.generateRiskInfo()
-      }
-    };
+  async updateRepository(id: string, updates: Partial<UniversalRepositoryInfo>): Promise<UniversalRepositoryInfo | null> {
+    const index = this.repositories.findIndex(repo => repo.id === id);
+    if (index === -1) return null;
+
+    this.repositories[index] = { ...this.repositories[index], ...updates };
+    return this.repositories[index];
   }
 
-  private async performAnalysis(
-    data: UniversalRepositoryInfo,
-    context?: string
-  ): Promise<{
-    risk: RiskInfo;
-    compliance: ComplianceInfo;
-    recommendations: string[];
+  async deleteRepository(id: string): Promise<boolean> {
+    const index = this.repositories.findIndex(repo => repo.id === id);
+    if (index === -1) return false;
+
+    this.repositories.splice(index, 1);
+    return true;
+  }
+
+  async uploadDocument(document: Omit<DocumentUpload, 'id'>): Promise<DocumentUpload> {
+    const newDoc: DocumentUpload = {
+      ...document,
+      id: `doc_${Date.now()}`
+    };
+
+    this.documents.push(newDoc);
+    return newDoc;
+  }
+
+  async getDocuments(): Promise<DocumentUpload[]> {
+    return this.documents;
+  }
+
+  async getDocument(id: string): Promise<DocumentUpload | null> {
+    return this.documents.find(doc => doc.id === id) || null;
+  }
+
+  async createEntry(entry: Omit<ManualEntry, 'id' | 'timestamp'>): Promise<ManualEntry> {
+    const newEntry: ManualEntry = {
+      ...entry,
+      id: `entry_${Date.now()}`,
+      timestamp: new Date().toISOString()
+    };
+
+    this.entries.push(newEntry);
+    return newEntry;
+  }
+
+  async getEntries(): Promise<ManualEntry[]> {
+    return this.entries;
+  }
+
+  async getEntry(id: string): Promise<ManualEntry | null> {
+    return this.entries.find(entry => entry.id === id) || null;
+  }
+
+  async updateEntry(id: string, updates: Partial<ManualEntry>): Promise<ManualEntry | null> {
+    const index = this.entries.findIndex(entry => entry.id === id);
+    if (index === -1) return null;
+
+    this.entries[index] = { 
+      ...this.entries[index], 
+      ...updates
+    };
+    return this.entries[index];
+  }
+
+  async deleteEntry(id: string): Promise<boolean> {
+    const index = this.entries.findIndex(entry => entry.id === id);
+    if (index === -1) return false;
+
+    this.entries.splice(index, 1);
+    return true;
+  }
+
+  async getDashboardData(): Promise<{
+    totalRepositories: number;
+    activeRepositories: number;
+    totalDocuments: number;
+    totalEntries: number;
+    recentActivity: any[];
   }> {
-    // Simulate AI-powered analysis
-    // In production, this would integrate with Z-AI Web Dev SDK
-    
-    const risk = data.metadata.risk || this.generateRiskInfo();
-    const compliance = data.metadata.compliance || this.generateComplianceInfo();
-    
-    const recommendations = this.generateRecommendations(risk, compliance, context);
-
     return {
-      risk,
-      compliance,
-      recommendations
+      totalRepositories: this.repositories.length,
+      activeRepositories: this.repositories.filter(r => r.status === 'active').length,
+      totalDocuments: this.documents.length,
+      totalEntries: this.entries.length,
+      recentActivity: []
     };
   }
 
-  // Helper methods
-  private generateId(prefix: string): string {
-    return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  private extractRepoName(url: string): string {
-    try {
-      const urlObj = new URL(url.startsWith('github.com') ? `https://${url}` : url);
-      const pathParts = urlObj.pathname.split('/').filter(Boolean);
-      return pathParts.length >= 2 ? `${pathParts[pathParts.length - 2]}/${pathParts[pathParts.length - 1]}` : url;
-    } catch {
-      return url;
+  async monitorRepository(input: string | UniversalRepositoryInfo | DocumentUpload | ManualEntry, options: any = {}): Promise<any> {
+    // Handle different input types
+    if (typeof input === 'string') {
+      // URL or local path
+      if (input.startsWith('http://') || input.startsWith('https://')) {
+        return await this.monitorRemoteRepository(input, options);
+      } else {
+        return await this.monitorLocalRepository(input, options);
+      }
+    } else if ('filename' in input) {
+      // Document upload
+      return await this.monitorDocument(input, options);
+    } else if ('repositoryId' in input) {
+      // Manual entry
+      return await this.processManualEntry(input, options);
+    } else {
+      // Repository info object
+      return await this.monitorRepositoryInfo(input, options);
     }
   }
 
-  private extractPathName(path: string): string {
-    const parts = path.split('/').filter(Boolean);
-    return parts[parts.length - 1] || path;
-  }
+  private async monitorRemoteRepository(url: string, options: any): Promise<any> {
+    // Simulate monitoring a remote repository
+    const repoInfo: UniversalRepositoryInfo = {
+      id: `repo_${Date.now()}`,
+      name: url.split('/').pop() || 'Unknown',
+      url,
+      type: this.detectRepositoryType(url),
+      status: 'active',
+      lastActivity: new Date().toISOString(),
+      commitCount: Math.floor(Math.random() * 1000),
+      contributorCount: Math.floor(Math.random() * 10),
+      language: 'TypeScript',
+      framework: 'Next.js',
+      description: `Repository monitored at ${new Date().toISOString()}`
+    };
 
-  private generateComplianceInfo(): ComplianceInfo {
-    const statuses = ['compliant', 'non-compliant', 'partial', 'unknown'] as const;
-    
+    this.repositories.push(repoInfo);
+
     return {
-      soc2: {
-        status: statuses[Math.floor(Math.random() * statuses.length)],
-        score: Math.floor(Math.random() * 100),
-        findings: this.generateFindings(),
-        lastAudit: this.generateRandomDate()
+      repository: repoInfo,
+      analysis: {
+        health: 'good',
+        issues: [],
+        recommendations: ['Regular updates recommended'],
+        lastChecked: new Date().toISOString()
       },
-      iso27001: {
-        status: statuses[Math.floor(Math.random() * statuses.length)],
-        score: Math.floor(Math.random() * 100),
-        findings: this.generateFindings(),
-        lastAudit: this.generateRandomDate()
-      },
-      gdpr: {
-        status: statuses[Math.floor(Math.random() * statuses.length)],
-        score: Math.floor(Math.random() * 100),
-        findings: this.generateFindings(),
-        lastAudit: this.generateRandomDate()
-      },
-      hipaa: {
-        status: statuses[Math.floor(Math.random() * statuses.length)],
-        score: Math.floor(Math.random() * 100),
-        findings: this.generateFindings(),
-        lastAudit: this.generateRandomDate()
-      },
-      pciDss: {
-        status: statuses[Math.floor(Math.random() * statuses.length)],
-        score: Math.floor(Math.random() * 100),
-        findings: this.generateFindings(),
-        lastAudit: this.generateRandomDate()
+      metadata: {
+        monitoringMethod: options.forceMethod || 'automatic',
+        context: options.additionalContext || '',
+        processingTime: Math.floor(Math.random() * 2000) + 1000
       }
     };
   }
 
-  private generateRiskInfo(): RiskInfo {
-    const levels = ['low', 'medium', 'high', 'critical'] as const;
-    const overallLevel = levels[Math.floor(Math.random() * levels.length)];
-    
+  private async monitorLocalRepository(path: string, options: any): Promise<any> {
+    // Simulate monitoring a local repository
+    const repoInfo: UniversalRepositoryInfo = {
+      id: `local_${Date.now()}`,
+      name: path.split('/').pop() || 'Local Repository',
+      url: path,
+      type: 'custom',
+      status: 'active',
+      lastActivity: new Date().toISOString(),
+      commitCount: Math.floor(Math.random() * 500),
+      contributorCount: 1,
+      language: 'TypeScript',
+      framework: 'Next.js',
+      description: `Local repository at ${path}`
+    };
+
+    this.repositories.push(repoInfo);
+
     return {
-      overall: overallLevel,
-      score: Math.floor(Math.random() * 100),
-      factors: {
-        security: Math.floor(Math.random() * 100),
-        compliance: Math.floor(Math.random() * 100),
-        operational: Math.floor(Math.random() * 100),
-        financial: Math.floor(Math.random() * 100),
-        reputational: Math.floor(Math.random() * 100)
+      repository: repoInfo,
+      analysis: {
+        health: 'excellent',
+        issues: [],
+        recommendations: ['Consider pushing to remote for backup'],
+        lastChecked: new Date().toISOString()
       },
-      recommendations: this.generateRiskRecommendations(),
-      lastAssessment: new Date().toISOString()
+      metadata: {
+        monitoringMethod: options.forceMethod || 'local',
+        context: options.additionalContext || '',
+        processingTime: Math.floor(Math.random() * 1000) + 500
+      }
     };
   }
 
-  private analyzeDocumentCompliance(document: DocumentUpload): ComplianceInfo {
-    // Simulate document compliance analysis
-    // In production, this would use AI to analyze document content
-    return this.generateComplianceInfo();
+  private async monitorDocument(document: DocumentUpload, options: any): Promise<any> {
+    // Store the document
+    this.documents.push(document);
+
+    // Analyze document content
+    const analysis = {
+      type: document.type,
+      size: document.metadata.size,
+      contentLength: document.content.length,
+      extractedInfo: {
+        technologies: this.extractTechnologies(document.content),
+        frameworks: this.extractFrameworks(document.content),
+        potentialIssues: this.identifyIssues(document.content)
+      },
+      confidence: 0.85
+    };
+
+    return {
+      document,
+      analysis,
+      metadata: {
+        processingMethod: 'document_analysis',
+        context: options.additionalContext || '',
+        processingTime: Math.floor(Math.random() * 3000) + 1000
+      }
+    };
   }
 
-  private analyzeDocumentRisk(document: DocumentUpload): RiskInfo {
-    // Simulate document risk analysis
-    // In production, this would use AI to assess document risk
-    return this.generateRiskInfo();
+  private async processManualEntry(entry: ManualEntry, options: any): Promise<any> {
+    // Store the manual entry
+    this.entries.push(entry);
+
+    return {
+      entry,
+      validation: {
+        isValid: true,
+        confidence: entry.confidence,
+        suggestions: []
+      },
+      metadata: {
+        processingMethod: 'manual_entry',
+        context: options.additionalContext || '',
+        processingTime: 100
+      }
+    };
   }
 
-  private generateFindings(): string[] {
-    const findings = [
-      'Access control policies need updating',
-      'Encryption standards not fully implemented',
-      'Audit trails incomplete',
-      'Data retention policy undefined',
-      'Incident response plan outdated',
-      'Third-party risk assessment required',
-      'Security awareness training needed',
-      'Backup procedures not documented'
-    ];
+  private async monitorRepositoryInfo(repoInfo: UniversalRepositoryInfo, options: any): Promise<any> {
+    // Store the repository info
+    this.repositories.push(repoInfo);
+
+    return {
+      repository: repoInfo,
+      analysis: {
+        health: 'good',
+        issues: [],
+        recommendations: ['Regular monitoring recommended'],
+        lastChecked: new Date().toISOString()
+      },
+      metadata: {
+        monitoringMethod: 'repository_info',
+        context: options.additionalContext || '',
+        processingTime: 500
+      }
+    };
+  }
+
+  private detectRepositoryType(url: string): 'github' | 'gitlab' | 'bitbucket' | 'custom' {
+    if (url.includes('github.com')) return 'github';
+    if (url.includes('gitlab.com')) return 'gitlab';
+    if (url.includes('bitbucket.org')) return 'bitbucket';
+    return 'custom';
+  }
+
+  private extractTechnologies(content: string): string[] {
+    const technologies = [];
+    const techKeywords = ['javascript', 'typescript', 'python', 'java', 'go', 'rust', 'c++', 'php', 'ruby'];
     
-    const count = Math.floor(Math.random() * 3) + 1;
-    const selected: string[] = [];
-    
-    for (let i = 0; i < count; i++) {
-      const finding = findings[Math.floor(Math.random() * findings.length)];
-      if (!selected.includes(finding)) {
-        selected.push(finding);
+    for (const tech of techKeywords) {
+      if (content.toLowerCase().includes(tech)) {
+        technologies.push(tech);
       }
     }
     
-    return selected;
+    return technologies;
   }
 
-  private generateRiskRecommendations(): string[] {
-    const recommendations = [
-      'Implement multi-factor authentication',
-      'Conduct regular security assessments',
-      'Update incident response plan',
-      'Enhance data encryption',
-      'Improve access controls',
-      'Establish security monitoring',
-      'Develop business continuity plan',
-      'Conduct vendor risk assessments'
-    ];
+  private extractFrameworks(content: string): string[] {
+    const frameworks = [];
+    const frameworkKeywords = ['react', 'next', 'vue', 'angular', 'express', 'django', 'flask', 'spring'];
     
-    const count = Math.floor(Math.random() * 4) + 2;
-    const selected: string[] = [];
-    
-    for (let i = 0; i < count; i++) {
-      const rec = recommendations[Math.floor(Math.random() * recommendations.length)];
-      if (!selected.includes(rec)) {
-        selected.push(rec);
+    for (const framework of frameworkKeywords) {
+      if (content.toLowerCase().includes(framework)) {
+        frameworks.push(framework);
       }
     }
     
-    return selected;
+    return frameworks;
   }
 
-  private generateRecommendations(
-    risk: RiskInfo,
-    compliance: ComplianceInfo,
-    context?: string
-  ): string[] {
-    const baseRecommendations = [
-      'Schedule regular compliance audits',
-      'Implement automated security monitoring',
-      'Develop vendor risk management program',
-      'Create incident response procedures',
-      'Establish data governance policies'
+  private identifyIssues(content: string): string[] {
+    const issues = [];
+    const issuePatterns = [
+      { pattern: /todo|fixme|hack/i, message: 'Contains TODO/FIXME comments' },
+      { pattern: /console\.log|debugger/i, message: 'Contains debug code' },
+      { pattern: /password|secret|key/i, message: 'May contain sensitive information' }
     ];
     
-    const selected: string[] = [];
-    
-    // Add risk-based recommendations
-    if (risk.overall === 'high' || risk.overall === 'critical') {
-      selected.push('Immediate risk mitigation required');
-      selected.push('Engage security consultants');
-    }
-    
-    // Add compliance-based recommendations
-    const complianceScores = Object.values(compliance).map(c => c.score);
-    const avgCompliance = complianceScores.reduce((a, b) => a + b, 0) / complianceScores.length;
-    
-    if (avgCompliance < 70) {
-      selected.push('Compliance improvement plan needed');
-    }
-    
-    // Add base recommendations
-    const count = Math.min(3, baseRecommendations.length);
-    for (let i = 0; i < count; i++) {
-      const rec = baseRecommendations[i];
-      if (!selected.includes(rec)) {
-        selected.push(rec);
+    for (const { pattern, message } of issuePatterns) {
+      if (pattern.test(content)) {
+        issues.push(message);
       }
     }
     
-    return selected;
-  }
-
-  private generateRandomDate(): string {
-    const start = new Date(2023, 0, 1);
-    const end = new Date();
-    const date = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-    return date.toISOString();
+    return issues;
   }
 }
 
 // Export singleton instance
 export const universalMonitor = new UniversalRepositoryMonitor();
-
-// Export types for external use
-export type {
-  UniversalRepositoryInfo,
-  DocumentUpload,
-  ManualEntry,
-  ComplianceInfo,
-  RiskInfo,
-  MonitoringResult
-};

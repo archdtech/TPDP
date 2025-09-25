@@ -55,7 +55,8 @@ import {
   FileCheck,
   Lock,
   Globe,
-  Timer
+  Timer,
+  Smartphone
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -138,6 +139,66 @@ export default function ProjectSentinelHomepage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedStage, setSelectedStage] = useState<string>('all');
+  const [isMobile, setIsMobile] = useState(false);
+  const [animatedStats, setAnimatedStats] = useState({
+    decisionLatency: 0,
+    acceptanceRate: 0,
+    evidenceReuse: 0,
+    npsScore: 0
+  });
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Animate statistics on scroll
+  useEffect(() => {
+    const animateStats = () => {
+      const stats = [
+        { key: 'decisionLatency', target: 120, duration: 2000 },
+        { key: 'acceptanceRate', target: 70, duration: 2500 },
+        { key: 'evidenceReuse', target: 30, duration: 3000 },
+        { key: 'npsScore', target: 50, duration: 3500 }
+      ];
+
+      stats.forEach(({ key, target, duration }) => {
+        const startTime = Date.now();
+        const animate = () => {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const current = Math.floor(progress * target);
+          
+          setAnimatedStats(prev => ({ ...prev, [key]: current }));
+          
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          }
+        };
+        animate();
+      });
+    };
+
+    // Trigger animation when section is in view
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateStats();
+          observer.disconnect();
+        }
+      });
+    });
+
+    const metricsSection = document.getElementById('success-metrics');
+    if (metricsSection) {
+      observer.observe(metricsSection);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   // Set loading to false after a timeout to bypass loading state
   useEffect(() => {
@@ -360,13 +421,13 @@ export default function ProjectSentinelHomepage() {
         <div className="relative max-w-7xl mx-auto px-4 py-24 sm:py-32">
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-6">
-              <Shield className="h-8 w-8" />
+              <Shield className="h-8 w-8 animate-pulse" />
               <span className="text-2xl font-bold">PROJECT SENTINEL</span>
             </div>
             
             <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
               AI-Powered TPRM
-              <span className="block text-emerald-400">Decision Platform</span>
+              <span className="block text-emerald-400 animate-gradient">Decision Platform</span>
             </h1>
             
             <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-4xl mx-auto leading-relaxed">
@@ -375,36 +436,50 @@ export default function ProjectSentinelHomepage() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-              <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 text-lg">
-                <Timer className="h-5 w-5 mr-2" />
+              <Button 
+                size="lg" 
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 text-lg transform hover:scale-105 transition-all duration-200 shadow-lg"
+                onClick={() => console.log('Fast Check clicked')}
+              >
+                <Timer className="h-5 w-5 mr-2 animate-spin-slow" />
                 Try Fast Check
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 text-lg">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 text-lg transform hover:scale-105 transition-all duration-200"
+                onClick={() => console.log('Vendor Passport clicked')}
+              >
                 <Globe className="h-5 w-5 mr-2" />
                 Create Vendor Passport
               </Button>
             </div>
             
             <div className="flex flex-wrap gap-6 justify-center text-sm">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 animate-fade-in">
                 <CheckCircle className="h-4 w-4 text-green-400" />
                 <span>2-Minute Risk Decisions</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 animate-fade-in" style={{animationDelay: '0.2s'}}>
                 <CheckCircle className="h-4 w-4 text-green-400" />
                 <span>AI-Powered Analysis</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 animate-fade-in" style={{animationDelay: '0.4s'}}>
                 <CheckCircle className="h-4 w-4 text-green-400" />
                 <span>Enterprise Grade Security</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 animate-fade-in" style={{animationDelay: '0.6s'}}>
                 <CheckCircle className="h-4 w-4 text-green-400" />
                 <span>Explainable Findings</span>
               </div>
             </div>
           </div>
         </div>
+        
+        {/* Animated background elements */}
+        <div className="absolute top-10 left-10 w-20 h-20 bg-emerald-400 rounded-full opacity-20 animate-float"></div>
+        <div className="absolute bottom-20 right-20 w-32 h-32 bg-teal-400 rounded-full opacity-20 animate-float-reverse"></div>
+        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-cyan-400 rounded-full opacity-20 animate-pulse"></div>
         
         {/* Wave decoration */}
         <div className="absolute bottom-0 left-0 right-0">
@@ -519,20 +594,20 @@ export default function ProjectSentinelHomepage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {tools.map((tool, index) => (
               <Link key={index} href={tool.href}>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                <Card className="hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer h-full group">
                   <CardHeader>
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
-                      <tool.icon className={`h-6 w-6 ${tool.color}`} />
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                      <tool.icon className={`h-6 w-6 ${tool.color} group-hover:animate-pulse`} />
                     </div>
-                    <CardTitle className="text-lg">{tool.name}</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-lg group-hover:text-blue-600 transition-colors">{tool.name}</CardTitle>
+                    <CardDescription className="text-gray-600">
                       {tool.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center text-sm text-blue-600">
+                    <div className="flex items-center text-sm text-blue-600 group-hover:text-blue-800 transition-colors">
                       <span>Explore Tool</span>
-                      <ArrowRight className="h-4 w-4 ml-2" />
+                      <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </CardContent>
                 </Card>
@@ -542,7 +617,7 @@ export default function ProjectSentinelHomepage() {
           
           <div className="text-center mt-12">
             <Link href="/tools">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
                 View All Tools
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
@@ -749,7 +824,7 @@ export default function ProjectSentinelHomepage() {
       </section>
 
       {/* Success Metrics */}
-      <section className="py-20 bg-gray-50">
+      <section id="success-metrics" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -761,9 +836,11 @@ export default function ProjectSentinelHomepage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="text-center border-0 shadow-lg">
+            <Card className="text-center border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader>
-                <div className="text-3xl font-bold text-blue-600 mb-2">≤120s</div>
+                <div className="text-3xl font-bold text-blue-600 mb-2">
+                  ≤{animatedStats.decisionLatency}s
+                </div>
                 <CardTitle className="text-lg">P99 Decision Latency</CardTitle>
                 <CardDescription>
                   Risk assessment processing time
@@ -771,9 +848,11 @@ export default function ProjectSentinelHomepage() {
               </CardHeader>
             </Card>
             
-            <Card className="text-center border-0 shadow-lg">
+            <Card className="text-center border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader>
-                <div className="text-3xl font-bold text-green-600 mb-2">≥70%</div>
+                <div className="text-3xl font-bold text-green-600 mb-2">
+                  ≥{animatedStats.acceptanceRate}%
+                </div>
                 <CardTitle className="text-lg">First-Pass Acceptance</CardTitle>
                 <CardDescription>
                   Analyst acceptance rate (Month 2)
@@ -781,9 +860,11 @@ export default function ProjectSentinelHomepage() {
               </CardHeader>
             </Card>
             
-            <Card className="text-center border-0 shadow-lg">
+            <Card className="text-center border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader>
-                <div className="text-3xl font-bold text-purple-600 mb-2">≥30%</div>
+                <div className="text-3xl font-bold text-purple-600 mb-2">
+                  ≥{animatedStats.evidenceReuse}%
+                </div>
                 <CardTitle className="text-lg">Evidence Reuse</CardTitle>
                 <CardDescription>
                   Vendor passport adoption (Month 3)
@@ -791,9 +872,11 @@ export default function ProjectSentinelHomepage() {
               </CardHeader>
             </Card>
             
-            <Card className="text-center border-0 shadow-lg">
+            <Card className="text-center border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader>
-                <div className="text-3xl font-bold text-orange-600 mb-2">≥50</div>
+                <div className="text-3xl font-bold text-orange-600 mb-2">
+                  ≥{animatedStats.npsScore}
+                </div>
                 <CardTitle className="text-lg">Analyst NPS</CardTitle>
                 <CardDescription>
                   User satisfaction score
@@ -805,27 +888,60 @@ export default function ProjectSentinelHomepage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-6">
+      <section className="py-20 bg-gradient-to-r from-emerald-600 to-teal-600 text-white relative overflow-hidden">
+        {/* Animated background elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-full h-full bg-black/10"></div>
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full animate-float"></div>
+          <div className="absolute bottom-10 right-10 w-24 h-24 bg-white/10 rounded-full animate-float-reverse"></div>
+          <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-white/10 rounded-full animate-pulse"></div>
+        </div>
+        
+        <div className="relative max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 animate-fade-in">
             Ready to Transform Your TPRM Process?
           </h2>
-          <p className="text-xl mb-8 text-emerald-100">
+          <p className="text-xl md:text-2xl mb-8 text-emerald-100 animate-fade-in" style={{animationDelay: '0.2s'}}>
             Join leading organizations who are revolutionizing vendor risk management with AI-powered automation.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-emerald-600 hover:bg-gray-100 px-8 py-4 text-lg">
-              <Star className="h-5 w-5 mr-2" />
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style={{animationDelay: '0.4s'}}>
+            <Button 
+              size="lg" 
+              className="bg-white text-emerald-600 hover:bg-gray-100 px-8 py-4 text-lg transform hover:scale-105 transition-all duration-200 shadow-xl hover:shadow-2xl"
+              onClick={() => console.log('Start Free Trial clicked')}
+            >
+              <Star className="h-5 w-5 mr-2 animate-pulse" />
               Start Free Trial
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-emerald-600 px-8 py-4 text-lg">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-white text-white hover:bg-white hover:text-emerald-600 px-8 py-4 text-lg transform hover:scale-105 transition-all duration-200 backdrop-blur-sm"
+              onClick={() => console.log('Schedule Demo clicked')}
+            >
               <Play className="h-5 w-5 mr-2" />
               Schedule Demo
             </Button>
           </div>
-          <p className="text-sm text-emerald-200 mt-6">
+          <p className="text-sm text-emerald-200 mt-6 animate-fade-in" style={{animationDelay: '0.6s'}}>
             No credit card required • 14-day free trial • Enterprise-grade security
           </p>
+          
+          {/* Trust indicators */}
+          <div className="flex flex-wrap justify-center items-center gap-8 mt-12 opacity-80">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              <span className="text-sm">SOC 2 Compliant</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Lock className="h-4 w-4" />
+              <span className="text-sm">AES-256 Encryption</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" />
+              <span className="text-sm">GDPR Ready</span>
+            </div>
+          </div>
         </div>
       </section>
 
