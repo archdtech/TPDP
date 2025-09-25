@@ -55,8 +55,7 @@ import {
   FileCheck,
   Lock,
   Globe,
-  Timer,
-  Smartphone
+  Timer
 } from 'lucide-react';
 import Link from 'next/link';
 
