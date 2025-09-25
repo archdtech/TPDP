@@ -153,6 +153,9 @@ export default function ProjectSentinelHomepage() {
 
   // Mobile detection
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+    
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -161,6 +164,9 @@ export default function ProjectSentinelHomepage() {
 
   // Animate statistics on scroll
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+    
     const animateStats = () => {
       const stats = [
         { key: 'decisionLatency', target: 120, duration: 2000 },
@@ -170,9 +176,9 @@ export default function ProjectSentinelHomepage() {
       ];
 
       stats.forEach(({ key, target, duration }) => {
-        const startTime = Date.now();
+        const startTime = performance.now();
         const animate = () => {
-          const elapsed = Date.now() - startTime;
+          const elapsed = performance.now() - startTime;
           const progress = Math.min(elapsed / duration, 1);
           const current = Math.floor(progress * target);
           

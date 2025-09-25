@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,11 @@ export default function AuthError() {
 
   // Get error from URL query parameters
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const error = urlParams.get("error");
-    console.log("Auth error:", error);
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get("error");
+      console.log("Auth error:", error);
+    }
   }, []);
 
   const getErrorMessage = (error: string | null) => {
@@ -29,9 +31,18 @@ export default function AuthError() {
     }
   };
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const error = urlParams.get("error");
-  const errorMessage = getErrorMessage(error);
+  // Initialize with default values to prevent hydration mismatch
+  const [error, setError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState("An authentication error occurred. Please try again.");
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const errorParam = urlParams.get("error");
+      setError(errorParam);
+      setErrorMessage(getErrorMessage(errorParam));
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center justify-center p-4">

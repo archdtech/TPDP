@@ -217,7 +217,11 @@ export default function FastCheckPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => window.history.back()} variant="outline" className="w-full">
+            <Button onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.history.back();
+              }
+            }} variant="outline" className="w-full">
               Go Back
             </Button>
           </CardContent>

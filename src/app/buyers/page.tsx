@@ -199,8 +199,15 @@ export default function BuyersPage() {
       return;
     }
 
+    // Generate a more stable ID using timestamp and random string
+    const generateId = () => {
+      const timestamp = typeof window !== 'undefined' ? Date.now() : Math.floor(Math.random() * 1000000);
+      const randomStr = Math.random().toString(36).substring(2, 8);
+      return `${timestamp}-${randomStr}`;
+    };
+
     const request: AssessmentRequest = {
-      id: Date.now().toString(),
+      id: generateId(),
       vendorName: newAssessment.vendorName,
       vendorDomain: newAssessment.vendorDomain,
       category: newAssessment.category,

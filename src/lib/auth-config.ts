@@ -8,8 +8,44 @@
 import { NextAuthOptions } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
+import * as bcrypt from "bcryptjs";
 import { db } from "./db";
+
+// Extended user type to include profile
+interface UserWithProfile {
+  id: string;
+  email: string;
+  password: string;
+  isActive: boolean;
+  roleId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  role: {
+    id: string;
+    name: string;
+    description: string | null;
+    permissions: Array<{
+      id: string;
+      name: string;
+      description: string | null;
+      resource: string;
+      action: string;
+      conditions: any;
+      createdAt: Date;
+      updatedAt: Date;
+    }>;
+  };
+  userProfile?: {
+    id: string;
+    userId: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    avatar?: string;
+    createdAt: Date;
+    updatedAt: Date;
+  } | null;
+}
 
 export const authOptions: NextAuthOptions = {
   // Configure Prisma adapter for database sessions
@@ -60,8 +96,9 @@ export const authOptions: NextAuthOptions = {
                 permissions: true,
               },
             },
+            userProfile: true,
           },
-        });
+        }) as UserWithProfile | null;
 
         if (!user || !user.isActive) {
           return null;

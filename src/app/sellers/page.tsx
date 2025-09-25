@@ -48,7 +48,7 @@ import {
   Phone,
   MapPin,
   Calendar,
-  Certificate,
+  Award as Certificate,
   DollarSign,
   Users2,
   Building,
@@ -194,8 +194,15 @@ export default function SellersPage() {
     if (!newDocument.name || !newDocument.type) return;
 
     if (vendorProfile) {
+      // Generate a more stable ID using timestamp and random string
+      const generateId = () => {
+        const timestamp = typeof window !== 'undefined' ? Date.now() : Math.floor(Math.random() * 1000000);
+        const randomStr = Math.random().toString(36).substring(2, 8);
+        return `${timestamp}-${randomStr}`;
+      };
+
       const document = {
-        id: Date.now().toString(),
+        id: generateId(),
         name: newDocument.name,
         type: newDocument.type,
         uploadDate: new Date().toISOString().split('T')[0],

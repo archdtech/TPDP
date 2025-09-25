@@ -134,15 +134,23 @@ export default function VendorPassportPage() {
   };
 
   const savePassport = () => {
+    // Calculate expiration date (only run on client)
+    const getExpirationDate = () => {
+      const now = new Date();
+      now.setFullYear(now.getFullYear() + 1);
+      return now.toISOString();
+    };
+
     const newPassport: VendorPassport = {
-      id: Math.random().toString(36).substr(2, 9),
+      // Generate a more stable ID
+      id: `doc-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
       vendorName: formData.vendorName,
       description: formData.description,
       category: formData.category,
       status: 'draft',
       score: 0,
       createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      expiresAt: getExpirationDate(),
       lastUpdated: new Date().toISOString(),
       contactInfo: {
         name: formData.contactName,
@@ -223,7 +231,11 @@ export default function VendorPassportPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => window.history.back()} variant="outline" className="w-full">
+            <Button onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.history.back();
+              }
+            }} variant="outline" className="w-full">
               Go Back
             </Button>
           </CardContent>
