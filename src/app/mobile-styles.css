@@ -1,0 +1,582 @@
+/* Mobile-First Responsive Enhancements for Venture Studio Dashboard */
+
+/* Base Mobile Styles */
+@media (max-width: 640px) {
+  /* Container and Layout */
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  /* Typography */
+  h1 {
+    font-size: 1.5rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  h2 {
+    font-size: 1.25rem !important;
+  }
+  
+  h3 {
+    font-size: 1.125rem !important;
+  }
+  
+  /* Card Layouts */
+  .grid {
+    gap: 1rem !important;
+  }
+  
+  .card {
+    margin-bottom: 1rem !important;
+  }
+  
+  /* Portfolio Metrics Grid */
+  .metrics-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.75rem !important;
+  }
+  
+  .metric-card {
+    padding: 1rem !important;
+  }
+  
+  .metric-value {
+    font-size: 1.5rem !important;
+  }
+  
+  .metric-label {
+    font-size: 0.75rem !important;
+  }
+  
+  /* Analytics Cards */
+  .analytics-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .analytics-card {
+    margin-bottom: 1rem !important;
+  }
+  
+  /* Portfolio Intelligence Cards */
+  .intelligence-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+  }
+  
+  .intelligence-card {
+    padding: 0.75rem !important;
+  }
+  
+  .intelligence-value {
+    font-size: 1.25rem !important;
+  }
+  
+  .intelligence-label {
+    font-size: 0.75rem !important;
+  }
+  
+  /* Strategic Insights */
+  .insights-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  .insights-card {
+    margin-bottom: 1rem !important;
+  }
+  
+  .insights-content {
+    padding: 1rem !important;
+  }
+  
+  .insights-list {
+    font-size: 0.875rem !important;
+  }
+  
+  .insights-list li {
+    padding: 0.5rem 0 !important;
+  }
+  
+  /* Recommendations */
+  .recommendations-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  .recommendations-card {
+    padding: 1rem !important;
+    border-left-width: 4px !important;
+  }
+  
+  .recommendations-list {
+    font-size: 0.875rem !important;
+  }
+  
+  .recommendations-item {
+    padding: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  /* Ventures List */
+  .ventures-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .venture-card {
+    margin-bottom: 1rem !important;
+  }
+  
+  .venture-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+  
+  .venture-actions {
+    align-self: flex-end !important;
+  }
+  
+  .venture-badges {
+    flex-wrap: wrap !important;
+    gap: 0.25rem !important;
+  }
+  
+  .venture-badge {
+    font-size: 0.625rem !important;
+    padding: 0.125rem 0.375rem !important;
+  }
+  
+  /* Buttons */
+  .btn {
+    font-size: 0.875rem !important;
+    padding: 0.5rem 1rem !important;
+  }
+  
+  .btn-sm {
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .btn-icon {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+  
+  /* Dialogs and Modals */
+  .dialog {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin: 1rem !important;
+  }
+  
+  .dialog-content {
+    padding: 1rem !important;
+    max-height: 85vh !important;
+  }
+  
+  .dialog-header {
+    margin-bottom: 1rem !important;
+  }
+  
+  .dialog-title {
+    font-size: 1.125rem !important;
+  }
+  
+  /* Forms */
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+  
+  .form-label {
+    font-size: 0.875rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+  
+  .form-input,
+  .form-textarea,
+  .form-select {
+    font-size: 0.875rem !important;
+    padding: 0.5rem !important;
+  }
+  
+  .form-section {
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .form-section-title {
+    font-size: 1rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+  
+  /* Progress Bars */
+  .progress {
+    height: 0.375rem !important;
+  }
+  
+  .progress-value {
+    font-size: 0.75rem !important;
+  }
+  
+  /* Tabs */
+  .tabs-list {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  .tabs-trigger {
+    font-size: 0.875rem !important;
+    padding: 0.5rem 1rem !important;
+    white-space: nowrap !important;
+  }
+  
+  /* Badges */
+  .badge {
+    font-size: 0.625rem !important;
+    padding: 0.125rem 0.375rem !important;
+  }
+  
+  .badge-lg {
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.5rem !important;
+  }
+  
+  /* Spacing */
+  .space-y-1 > * + * {
+    margin-top: 0.25rem !important;
+  }
+  
+  .space-y-2 > * + * {
+    margin-top: 0.5rem !important;
+  }
+  
+  .space-y-3 > * + * {
+    margin-top: 0.75rem !important;
+  }
+  
+  .space-y-4 > * + * {
+    margin-top: 1rem !important;
+  }
+  
+  .space-y-6 > * + * {
+    margin-top: 1.5rem !important;
+  }
+  
+  /* Navigation */
+  .nav-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+  }
+  
+  .nav-actions {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+  
+  /* Footer */
+  .footer {
+    padding: 1rem !important;
+    text-align: center !important;
+  }
+  
+  .footer-content {
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Tablet Styles */
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Container and Layout */
+  .container {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+  
+  /* Typography */
+  h1 {
+    font-size: 1.875rem !important;
+  }
+  
+  h2 {
+    font-size: 1.5rem !important;
+  }
+  
+  /* Portfolio Metrics Grid */
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+  }
+  
+  /* Analytics Cards */
+  .analytics-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Strategic Insights */
+  .insights-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Recommendations */
+  .recommendations-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Ventures List */
+  .ventures-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Intelligence Cards */
+  .intelligence-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+  
+  /* Forms */
+  .form-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  /* Dialogs */
+  .dialog {
+    width: 90vw !important;
+    max-width: 90vw !important;
+  }
+}
+
+/* Desktop Styles */
+@media (min-width: 1025px) {
+  /* Container and Layout */
+  .container {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+  
+  /* Portfolio Metrics Grid */
+  .metrics-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 1.5rem !important;
+  }
+  
+  /* Analytics Cards */
+  .analytics-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 1rem !important;
+  }
+  
+  /* Strategic Insights */
+  .insights-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1.5rem !important;
+  }
+  
+  /* Recommendations */
+  .recommendations-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 1.5rem !important;
+  }
+  
+  /* Ventures List */
+  .ventures-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Intelligence Cards */
+  .intelligence-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 1rem !important;
+  }
+  
+  /* Forms */
+  .form-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  /* Dialogs */
+  .dialog {
+    width: 80vw !important;
+    max-width: 80vw !important;
+  }
+}
+
+/* High Density Mobile (Small Phones) */
+@media (max-width: 375px) {
+  /* Typography */
+  h1 {
+    font-size: 1.25rem !important;
+  }
+  
+  h2 {
+    font-size: 1.125rem !important;
+  }
+  
+  /* Cards */
+  .card {
+    padding: 0.75rem !important;
+  }
+  
+  .metric-value {
+    font-size: 1.25rem !important;
+  }
+  
+  .metric-label {
+    font-size: 0.625rem !important;
+  }
+  
+  /* Buttons */
+  .btn {
+    font-size: 0.75rem !important;
+    padding: 0.375rem 0.75rem !important;
+  }
+  
+  .btn-icon {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+  
+  /* Badges */
+  .badge {
+    font-size: 0.5625rem !important;
+    padding: 0.0625rem 0.25rem !important;
+  }
+  
+  /* Forms */
+  .form-input,
+  .form-textarea,
+  .form-select {
+    font-size: 0.75rem !important;
+    padding: 0.375rem !important;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 640px) and (orientation: landscape) {
+  /* Adjust for landscape orientation */
+  .container {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  .nav-header {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+  
+  .metric-card {
+    padding: 0.5rem !important;
+  }
+  
+  .intelligence-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+}
+
+/* Touch Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets */
+  .btn,
+  .btn-sm {
+    min-height: 2.75rem !important;
+    min-width: 2.75rem !important;
+  }
+  
+  .badge {
+    min-height: 1.5rem !important;
+    min-width: 1.5rem !important;
+  }
+  
+  .card {
+    cursor: pointer !important;
+  }
+  
+  .card:active {
+    transform: scale(0.98) !important;
+  }
+  
+  /* Larger interactive elements */
+  .interactive {
+    min-height: 2.5rem !important;
+    min-width: 2.5rem !important;
+  }
+  
+  /* Better spacing for touch */
+  .touch-spacing {
+    margin: 0.5rem !important;
+  }
+}
+
+/* Accessibility Enhancements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .card {
+    border: 2px solid currentColor !important;
+  }
+  
+  .btn {
+    border: 2px solid currentColor !important;
+  }
+  
+  .badge {
+    border: 1px solid currentColor !important;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .card {
+    background-color: rgba(30, 30, 30, 0.9) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .metrics-card {
+    background-color: rgba(40, 40, 40, 0.9) !important;
+  }
+  
+  .intelligence-card {
+    background-color: rgba(35, 35, 35, 0.9) !important;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .card {
+    break-inside: avoid !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .insights-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .recommendations-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

@@ -21,12 +21,87 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Venture {
+  id              String   @id @default(cuid())
+  name            String
+  description     String
+  category        String
+  stage           String   // "idea", "prototype", "mvp", "growth", "maturity"
+  maturity        Int      // 1-100 maturity score
+  priority        String   // "high", "medium", "low"
+  status          String   // "active", "paused", "completed", "terminated"
+  
+  // Billion-Dollar Vision
+  problemWorld    String?
+  newWorld        String?
+  valueUnlock     String?
+  
+  // Why You
+  originStory     String?
+  deepCapability  String?
+  unfairAdvantage String?
+  
+  // Why Now
+  unlockFactor    String?
+  inevitability   String?
+  urgencyTrigger  String?
+  
+  // Metrics
+  marketSize      String?
+  fundingNeed     String?
+  timeline        String?
+  
+  // Technical
+  repository      String?
+  language        String?
+  lastUpdated     DateTime @updatedAt
+  createdAt       DateTime @default(now())
+  
+  @@map("ventures")
+}
+
+model Portfolio {
+  id              String   @id @default(cuid())
+  name            String
+  description     String
+  totalVentures   Int      @default(0)
+  activeVentures  Int      @default(0)
+  averageMaturity Float    @default(0)
+  totalFunding    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("portfolios")
+}
+
+model InvestorShare {
+  id              String   @id @default(cuid())
+  name            String
+  email           String?
+  company         String?
+  password        String
+  shareToken      String   @unique
+  ventureIds      String   // JSON array of venture IDs to include
+  isActive        Boolean  @default(true)
+  expiresAt       DateTime?
+  accessCount     Int      @default(0)
+  lastAccessed    DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Configuration
+  viewTemplate    String   @default("professional") // "professional", "detailed", "executive", "technical"
+  includeMetrics  Boolean  @default(true)
+  includeTimeline Boolean  @default(true)
+  includeFinancial Boolean @default(true)
+  allowDownload   Boolean  @default(false)
+  customMessage   String?
+  
+  // Analytics
+  viewDuration    Int      @default(0) // Total time spent viewing in seconds
+  uniqueVisitors  Int      @default(0)
+  lastVisitorIP   String?
+  deviceInfo      String?  // JSON string with device/browser info
+  
+  @@map("investor_shares")
 }
