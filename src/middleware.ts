@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
 // Define role-based access control rules
 const ROLE_PERMISSIONS = {
@@ -93,13 +94,14 @@ const ROLE_PERMISSIONS = {
 // Public routes that don't require authentication
 const PUBLIC_ROUTES = [
   '/',
-  '/auth/login',
-  '/auth/register',
+  '/auth/signin',
+  '/auth/signout',
+  '/auth/error',
   '/api/auth',
   '/api/health'
 ];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
   // Allow public routes
@@ -107,12 +109,21 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // For demo purposes, we'll use a mock user role
-  // In a real application, this would come from authentication
-  const userRole = request.headers.get('x-user-role') || 'readonly';
+  // Get JWT token from request
+  const token = await getToken({ req: request });
+  
+  if (!token) {
+    // Redirect to sign-in if no token
+    return NextResponse.redirect(new URL('/auth/signin', request.url));
+  }
+  
+  // Check if user has role in token
+  if (!token.role) {
+    return NextResponse.redirect(new URL('/auth/error?error=CredentialsSignin', request.url));
+  }
   
   // Check if user has permission to access the route
-  const userPermissions = ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS] || [];
+  const userPermissions = ROLE_PERMISSIONS[token.role as keyof typeof ROLE_PERMISSIONS] || [];
   
   // Check if the path matches any of the user's permissions
   const hasAccess = userPermissions.some(permission => {
@@ -130,7 +141,7 @@ export function middleware(request: NextRequest) {
   });
   
   if (!hasAccess) {
-    // Redirect to unauthorized page or login
+    // Redirect to unauthorized page
     return NextResponse.redirect(new URL('/unauthorized', request.url));
   }
   
