@@ -1,0 +1,199 @@
+# <!-- Powered by BMAD™ Core -->
+# TPDP Security Project - BMAD-METHOD™ Configuration
+
+# Core Configuration
+markdownExploder: true
+
+# Quality Assurance Configuration
+qa:
+  qaLocation: docs/qa
+  securityGates: true
+  complianceChecks: true
+
+# Product Requirements Document Configuration
+prd:
+  prdFile: docs/prd.md
+  prdVersion: v4
+  prdSharded: true
+  prdShardedLocation: docs/prd
+  epicFilePattern: epic-{n}*.md
+  securityFocus: true
+
+# Architecture Configuration
+architecture:
+  architectureFile: docs/architecture.md
+  architectureVersion: v4
+  architectureSharded: true
+  architectureShardedLocation: docs/architecture
+  securityArchitecture: true
+
+# Custom Technical Documents
+customTechnicalDocuments:
+  - docs/security/security-requirements.md
+  - docs/security/threat-model.md
+  - docs/security/compliance-framework.md
+  - docs/security/authentication-spec.md
+
+# Developer Configuration
+devLoadAlwaysFiles:
+  - docs/architecture/coding-standards.md
+  - docs/architecture/tech-stack.md
+  - docs/architecture/source-tree.md
+  - docs/security/security-standards.md
+  - docs/security/secure-coding-guidelines.md
+
+devDebugLog: .ai/debug-log.md
+devStoryLocation: docs/stories
+
+# BMAD-METHOD™ Configuration
+slashPrefix: BMad
+agentPrefix: TPDP-Security
+securityMode: true
+complianceMode: true
+
+# TPDP Security Project Specific
+project:
+  name: "TPDP Security Foundation & Architecture Enhancement"
+  id: "TPDP-SECURE-2024-001"
+  priority: "CRITICAL"
+  framework: "BMAD-METHOD™"
+  securityLevel: "Enterprise"
+
+# Agent Configuration
+agents:
+  analyst:
+    name: "Security Analyst"
+    file: "bmad-agents/security-analyst.md"
+    role: "Security Research & Threat Analysis"
+    
+  pm:
+    name: "Security PM"
+    file: "bmad-agents/security-pm.md"
+    role: "Security Requirements Management"
+    
+  architect:
+    name: "Security Architect"
+    file: "bmad-agents/security-architect.md"
+    role: "Security Technical Architecture"
+    
+  dev:
+    name: "Security Dev"
+    file: "bmad-agents/security-dev.md"
+    role: "Secure Implementation"
+    
+  qa:
+    name: "Security QA"
+    file: "bmad-agents/security-qa.md"
+    role: "Security Testing & Validation"
+    
+  sm:
+    name: "Security Scrum Master"
+    file: "bmad-agents/security-sm.md"
+    role: "Security Story Management"
+    
+  po:
+    name: "Security Product Owner"
+    file: "bmad-agents/security-po.md"
+    role: "Security Product Management"
+
+# Security Context Configuration
+securityContext:
+  threatModel: "docs/security/threat-model.md"
+  complianceFramework: "docs/security/compliance-framework.md"
+  authenticationSpec: "docs/security/authentication-spec.md"
+  securityStandards: "docs/security/security-standards.md"
+
+# Development Workflow Configuration
+workflow:
+  planningPhase:
+    enabled: true
+    agents: ["analyst", "pm", "architect", "qa"]
+    outputLocation: "docs/planning/"
+    
+  developmentPhase:
+    enabled: true
+    agents: ["sm", "dev", "qa"]
+    storyLocation: "docs/stories/"
+    reviewProcess: true
+    
+  securityGates:
+    enabled: true
+    gates:
+      - "Threat Model Validation"
+      - "Security Architecture Review"
+      - "Secure Implementation Validation"
+      - "Compliance Verification"
+
+# Quality Gates Configuration
+qualityGates:
+  security:
+    enabled: true
+    required: true
+    criteria:
+      - "Zero critical vulnerabilities"
+      - "All security tests pass"
+      - "Compliance requirements met"
+      - "Threat model addressed"
+    
+  functionality:
+    enabled: true
+    required: true
+    criteria:
+      - "All requirements implemented"
+      - "All acceptance criteria met"
+      - "Integration tests pass"
+      - "Performance requirements met"
+    
+  documentation:
+    enabled: true
+    required: true
+    criteria:
+      - "Security documentation complete"
+      - "API documentation updated"
+      - "User documentation accurate"
+      - "Compliance documentation current"
+
+# Template Configuration
+templates:
+  prd: "bmad-core/templates/security-prd-template.md"
+  architecture: "bmad-core/templates/security-architecture-template.md"
+  story: "bmad-core/templates/security-story-template.md"
+  epic: "bmad-core/templates/security-epic-template.md"
+  test: "bmad-core/templates/security-test-template.md"
+
+# Integration Configuration
+integration:
+  gitIntegration: true
+  githubActions: true
+  securityScanning: true
+  automatedTesting: true
+  deploymentProtection: true
+
+# Notification Configuration
+notifications:
+  securityIncidents: true
+  qualityGateFailures: true
+  deploymentEvents: true
+  teamCoordination: true
+
+# Backup and Recovery
+backup:
+  enabled: true
+  location: "backups/"
+  frequency: "daily"
+  retention: "30 days"
+  
+# Performance Configuration
+performance:
+  maxConcurrentAgents: 7
+  storyProcessingTimeout: "30m"
+  planningPhaseTimeout: "2h"
+  developmentPhaseTimeout: "4h"
+  
+# Logging Configuration
+logging:
+  level: "INFO"
+  security: "DEBUG"
+  performance: "INFO"
+  location: "logs/"
+  retention: "7 days"

@@ -1,64 +1,159 @@
 /**
- * Authentication Configuration
+ * NextAuth.js Configuration
  * 
- * This file contains the configuration for password protection
- * and other authentication-related settings.
+ * Secure authentication configuration for TPDP platform
+ * Implements enterprise-grade security with JWT sessions and RBAC
  */
 
-export const AUTH_CONFIG = {
-  // Password for accessing the dashboard
-  // Change this to your desired password
-  PASSWORD: process.env.NEXT_PUBLIC_DASHBOARD_PASSWORD || "venture2024",
+import { NextAuthOptions } from "next-auth";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { db } from "./db";
+
+export const authOptions: NextAuthOptions = {
+  // Configure Prisma adapter for database sessions
+  adapter: PrismaAdapter(db) as any,
   
-  // Session timeout in milliseconds (default: 24 hours)
-  SESSION_TIMEOUT: 24 * 60 * 60 * 1000,
+  // Configure session strategy
+  session: {
+    strategy: "jwt",
+    maxAge: 24 * 60 * 60, // 24 hours
+    updateAge: 24 * 60 * 60, // 24 hours
+  },
   
-  // Enable/disable password protection
-  // Set to false to disable password protection (not recommended for production)
-  ENABLED: false,
+  // Configure JWT settings
+  jwt: {
+    maxAge: 24 * 60 * 60, // 24 hours
+  },
   
-  // Custom authentication message
-  LOGIN_MESSAGE: "Enter your password to access the Venture Studio Dashboard",
+  // Configure authentication providers
+  providers: [
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: {
+          label: "Email",
+          type: "email",
+          placeholder: "your-email@company.com",
+        },
+        password: {
+          label: "Password",
+          type: "password",
+          placeholder: "your-password",
+        },
+      },
+      
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        // Find user by email
+        const user = await db.user.findUnique({
+          where: {
+            email: credentials.email,
+          },
+          include: {
+            role: {
+              include: {
+                permissions: true,
+              },
+            },
+          },
+        });
+
+        if (!user || !user.isActive) {
+          return null;
+        }
+
+        // Verify password
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password,
+          user.password
+        );
+
+        if (!isPasswordValid) {
+          return null;
+        }
+
+        // Return user with role and permissions
+        return {
+          id: user.id,
+          email: user.email,
+          name: `${user.userProfile?.firstName || ''} ${user.userProfile?.lastName || ''}`.trim() || user.email,
+          role: user.role.name,
+          permissions: user.role.permissions.map(p => p.name),
+        };
+      },
+    }),
+  ],
   
-  // Custom logout message
-  LOGOUT_MESSAGE: "You have been successfully logged out",
+  // Configure callbacks
+  callbacks: {
+    // JWT callback - called when token is created/updated
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role;
+        token.permissions = user.permissions;
+        token.userId = user.id;
+      }
+      return token;
+    },
+    
+    // Session callback - called whenever session is accessed
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.userId as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+        session.user.role = token.role as string;
+        session.user.permissions = token.permissions as string[];
+      }
+      return session;
+    },
+  },
   
-  // Remember me functionality
-  REMEMBER_ME_ENABLED: true,
+  // Configure pages
+  pages: {
+    signIn: "/auth/signin",
+    signOut: "/auth/signout",
+    error: "/auth/error",
+  },
   
-  // Maximum login attempts
-  MAX_LOGIN_ATTEMPTS: 5,
+  // Configure security settings
+  secret: process.env.NEXTAUTH_SECRET,
+  useSecureCookies: process.env.NODE_ENV === "production",
   
-  // Lockout duration in milliseconds (default: 15 minutes)
-  LOCKOUT_DURATION: 15 * 60 * 1000,
-  
-  // Password requirements
-  PASSWORD_REQUIREMENTS: {
-    minLength: 8,
-    requireUppercase: false,
-    requireLowercase: false,
-    requireNumbers: false,
-    requireSpecialChars: false
-  }
+  // Configure debug mode
+  debug: process.env.NODE_ENV === "development",
 };
 
-// Helper function to validate password against requirements
-export function validatePassword(password: string): boolean {
-  const { minLength } = AUTH_CONFIG.PASSWORD_REQUIREMENTS;
-  
-  if (!password || password.length < minLength) {
-    return false;
+// Type definitions for NextAuth.js
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      role: string;
+      permissions: string[];
+    };
   }
-  
-  return true;
+
+  interface User {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    permissions: string[];
+  }
 }
 
-// Helper function to check if password protection is enabled
-export function isPasswordProtectionEnabled(): boolean {
-  return AUTH_CONFIG.ENABLED;
-}
-
-// Helper function to get the current password
-export function getCurrentPassword(): string {
-  return AUTH_CONFIG.PASSWORD;
+declare module "next-auth/jwt" {
+  interface JWT {
+    role: string;
+    permissions: string[];
+    userId: string;
+  }
 }
