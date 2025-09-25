@@ -32,7 +32,6 @@ import {
   Globe,
   Star,
   ThumbsUp,
-  Certificate,
   Award,
   TrendingUp,
   TrendingDown,
@@ -279,7 +278,7 @@ export default function ComplianceDashboard() {
   const getFrameworkIcon = (type: string) => {
     switch (type) {
       case 'soc2': return <Shield className="h-4 w-4" />;
-      case 'iso27001': return <Certificate className="h-4 w-4" />;
+      case 'iso27001': return <Award className="h-4 w-4" />;
       case 'pcidss': return <Award className="h-4 w-4" />;
       case 'hipaa': return <FileText className="h-4 w-4" />;
       case 'gdpr': return <Globe className="h-4 w-4" />;
@@ -601,7 +600,7 @@ export default function ComplianceDashboard() {
                       <span className="text-sm">Deloitte</span>
                     </div>
                     <Button variant="outline" size="sm" className="w-full">
-                      View Certificate
+                      View Award
                     </Button>
                   </div>
                 </CardContent>
@@ -610,7 +609,7 @@ export default function ComplianceDashboard() {
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <Certificate className="h-5 w-5 text-purple-600" />
+                    <Award className="h-5 w-5 text-purple-600" />
                     <CardTitle className="text-lg">ISO 27001</CardTitle>
                   </div>
                   <CardDescription>
@@ -663,7 +662,7 @@ export default function ComplianceDashboard() {
                       <span className="text-sm">Trustwave</span>
                     </div>
                     <Button variant="outline" size="sm" className="w-full">
-                      View Certificate
+                      View Award
                     </Button>
                   </div>
                 </CardContent>

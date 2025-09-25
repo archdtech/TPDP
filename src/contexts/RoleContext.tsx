@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface User {
   id: string;
@@ -81,18 +81,25 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Simulate checking authentication on mount
-  React.useEffect(() => {
+  useEffect(() => {
     const checkAuth = async () => {
       try {
-        // In a real app, this would be an API call to check auth status
-        // For demo purposes, we'll set a default user
-        const mockUser: User = {
-          id: '1',
-          name: 'Demo User',
-          email: 'demo@example.com',
-          role: 'admin' // Change this to test different roles
-        };
-        setUser(mockUser);
+        // Only access localStorage on client side
+        const storedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+        
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        } else {
+          // In a real app, this would be an API call to check auth status
+          // For demo purposes, we'll set a default user
+          const mockUser: User = {
+            id: '1',
+            name: 'Demo User',
+            email: 'demo@example.com',
+            role: 'admin' // Change this to test different roles
+          };
+          setUser(mockUser);
+        }
       } catch (error) {
         console.error('Auth check failed:', error);
       } finally {
@@ -106,12 +113,16 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   const login = (userData: User) => {
     setUser(userData);
     // In a real app, you would also store the auth token
-    localStorage.setItem('user', JSON.stringify(userData));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('user');
+    }
   };
 
   const hasPermission = (permission: string): boolean => {

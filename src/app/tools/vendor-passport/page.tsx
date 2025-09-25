@@ -48,7 +48,8 @@ import {
   Copy,
   ExternalLink,
   QrCode,
-  MoreHorizontal
+  MoreHorizontal,
+  X
 } from 'lucide-react';
 import { useRole } from '@/contexts/RoleContext';
 
