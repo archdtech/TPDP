@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useSession, signIn, signOut } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -56,7 +57,9 @@ import {
   Lock,
   Globe,
   Timer,
-  Smartphone
+  Smartphone,
+  LogOut,
+  User
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -130,6 +133,7 @@ interface Analytics {
 }
 
 export default function ProjectSentinelHomepage() {
+  const { data: session, status } = useSession();
   const [ventures, setVentures] = useState<Venture[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -405,11 +409,33 @@ export default function ProjectSentinelHomepage() {
                 ))}
               </div>
             </div>
-            <div className="flex items-center">
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
+            <div className="flex items-center gap-4">
+              {session ? (
+                <>
+                  <div className="hidden md:flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                        <span className="text-emerald-600 font-medium text-sm">
+                          {session.user?.name?.charAt(0).toUpperCase() || "U"}
+                        </span>
+                      </div>
+                      <div className="text-sm">
+                        <p className="font-medium text-gray-900">{session.user?.name}</p>
+                        <p className="text-xs text-gray-500">{session.user?.role}</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => signOut()}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <Button onClick={() => signIn()} size="sm">
+                  <User className="h-4 w-4 mr-2" />
+                  Sign In
+                </Button>
+              )}
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useSession, signIn, signOut } from 'next-auth/react';
 
 interface User {
   id: string;
@@ -11,10 +12,11 @@ interface User {
 
 interface RoleContextType {
   user: User | null;
-  login: (user: User) => void;
-  logout: () => void;
+  login: (credentials: { email: string; password: string }) => Promise<void>;
+  logout: () => Promise<void>;
   hasPermission: (permission: string) => boolean;
   isLoading: boolean;
+  sessionStatus: 'authenticated' | 'unauthenticated' | 'loading';
 }
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
@@ -77,52 +79,38 @@ const ROLE_PERMISSIONS = {
 };
 
 export function RoleProvider({ children }: { children: ReactNode }) {
+  const { data: session, status } = useSession();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Simulate checking authentication on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // Only access localStorage on client side
-        const storedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-        
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-        } else {
-          // In a real app, this would be an API call to check auth status
-          // For demo purposes, we'll set a default user
-          const mockUser: User = {
-            id: '1',
-            name: 'Demo User',
-            email: 'demo@example.com',
-            role: 'admin' // Change this to test different roles
-          };
-          setUser(mockUser);
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (session?.user) {
+      setUser({
+        id: session.user.id as string,
+        name: session.user.name as string,
+        email: session.user.email as string,
+        role: session.user.role as User['role']
+      });
+    } else {
+      setUser(null);
+    }
+    setIsLoading(status === 'loading');
+  }, [session, status]);
 
-    checkAuth();
-  }, []);
+  const login = async (credentials: { email: string; password: string }) => {
+    const result = await signIn('credentials', {
+      email: credentials.email,
+      password: credentials.password,
+      redirect: false
+    });
 
-  const login = (userData: User) => {
-    setUser(userData);
-    // In a real app, you would also store the auth token
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('user', JSON.stringify(userData));
+    if (result?.error) {
+      throw new Error(result.error);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('user');
-    }
+  const logout = async () => {
+    await signOut({ redirect: false });
   };
 
   const hasPermission = (permission: string): boolean => {
@@ -136,7 +124,8 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     hasPermission,
-    isLoading
+    isLoading,
+    sessionStatus: status
   };
 
   return (
@@ -160,9 +149,9 @@ export function withRoleProtection(
   requiredRoles: string[] = []
 ) {
   return function ProtectedComponent(props: any) {
-    const { user, isLoading } = useRole();
+    const { user, isLoading, sessionStatus } = useRole();
 
-    if (isLoading) {
+    if (isLoading || sessionStatus === 'loading') {
       return (
         <div className="flex items-center justify-center min-h-screen">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -170,7 +159,7 @@ export function withRoleProtection(
       );
     }
 
-    if (!user) {
+    if (!user || sessionStatus === 'unauthenticated') {
       // Redirect to login if not authenticated
       return (
         <div className="flex items-center justify-center min-h-screen">
@@ -178,7 +167,7 @@ export function withRoleProtection(
             <h2 className="text-2xl font-bold mb-4">Authentication Required</h2>
             <p className="text-gray-600 mb-4">Please log in to access this page.</p>
             <button 
-              onClick={() => window.location.href = '/auth/login'}
+              onClick={() => window.location.href = '/auth/signin'}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
               Login
@@ -196,7 +185,7 @@ export function withRoleProtection(
             <h2 className="text-2xl font-bold mb-4 text-red-600">Access Denied</h2>
             <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
             <button 
-              onClick={() => window.location.href = '/unauthorized'}
+              onClick={() => window.location.href = '/auth/signin'}
               className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
             >
               Go Back

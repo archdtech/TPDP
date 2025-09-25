@@ -13,13 +13,100 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Security Models for Authentication and Authorization
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
-  name      String?
+  password  String   // bcrypt hashed
+  isActive  Boolean  @default(true)
+  roleId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Relationships
+  role       Role       @relation(fields: [roleId], references: [id])
+  sessions   Session[]
+  auditLogs  AuditLog[]
+  userProfile UserProfile?
+
+  @@map("users")
 }
+
+model Role {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String?
+  permissions Permission[]
+  users       User[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String             @id @default(cuid())
+  name        String             @unique
+  description String?
+  resource    String
+  action      String
+  conditions  Json?
+  roles       Role[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@map("permissions")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  sessionToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  action      String
+  resource    String?
+  resourceId  String?
+  metadata    Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  // Relationships
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model UserProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  firstName String?
+  lastName  String?
+  phone     String?
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+// Business Models for TPRM Platform
 
 model Venture {
   id              String   @id @default(cuid())

@@ -1,12 +1,319 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding database...');
+  console.log('Seeding database with security and business data...');
 
-  // Clear existing ventures
+  // Clear existing data
+  await prisma.auditLog.deleteMany();
+  await prisma.session.deleteMany();
+  await prisma.userProfile.deleteMany();
+  await prisma.user.deleteMany();
   await prisma.venture.deleteMany();
+  await prisma.portfolio.deleteMany();
+  await prisma.investorShare.deleteMany();
+  await prisma.permission.deleteMany();
+  await prisma.role.deleteMany();
+
+  // Create Permissions
+  const permissions = await Promise.all([
+    prisma.permission.create({
+      data: {
+        name: 'view_dashboards',
+        description: 'View all dashboards',
+        resource: 'dashboard',
+        action: 'read'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'view_risk_assessments',
+        description: 'View risk assessments',
+        resource: 'risk',
+        action: 'read'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'create_risk_assessments',
+        description: 'Create new risk assessments',
+        resource: 'risk',
+        action: 'create'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'edit_risk_assessments',
+        description: 'Edit existing risk assessments',
+        resource: 'risk',
+        action: 'update'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'view_vendors',
+        description: 'View vendor information',
+        resource: 'vendor',
+        action: 'read'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'create_vendors',
+        description: 'Create new vendor records',
+        resource: 'vendor',
+        action: 'create'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'edit_vendors',
+        description: 'Edit vendor information',
+        resource: 'vendor',
+        action: 'update'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'view_compliance_reports',
+        description: 'View compliance reports',
+        resource: 'compliance',
+        action: 'read'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'generate_compliance_reports',
+        description: 'Generate compliance reports',
+        resource: 'compliance',
+        action: 'create'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'view_audit_trails',
+        description: 'View audit trails',
+        resource: 'audit',
+        action: 'read'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'manage_users',
+        description: 'Manage user accounts',
+        resource: 'user',
+        action: 'manage'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'manage_roles',
+        description: 'Manage roles and permissions',
+        resource: 'role',
+        action: 'manage'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'view_reports',
+        description: 'View system reports',
+        resource: 'report',
+        action: 'read'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'manage_compliance_settings',
+        description: 'Manage compliance settings',
+        resource: 'compliance',
+        action: 'manage'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'manage_vendor_relationships',
+        description: 'Manage vendor relationships',
+        resource: 'vendor',
+        action: 'manage'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'view_vendor_assessments',
+        description: 'View vendor assessments',
+        resource: 'vendor',
+        action: 'read'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'view_tools',
+        description: 'Access system tools',
+        resource: 'tool',
+        action: 'read'
+      }
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'manage_system_settings',
+        description: 'Manage system settings',
+        resource: 'system',
+        action: 'manage'
+      }
+    })
+  ]);
+
+  // Create Roles with Permissions
+  const adminRole = await prisma.role.create({
+    data: {
+      name: 'admin',
+      description: 'System administrator with full access',
+      permissions: {
+        connect: permissions.map(p => ({ id: p.id }))
+      }
+    }
+  });
+
+  const riskAnalystRole = await prisma.role.create({
+    data: {
+      name: 'risk_analyst',
+      description: 'Risk management specialist',
+      permissions: {
+        connect: [
+          { id: permissions.find(p => p.name === 'view_dashboards')!.id },
+          { id: permissions.find(p => p.name === 'view_risk_assessments')!.id },
+          { id: permissions.find(p => p.name === 'create_risk_assessments')!.id },
+          { id: permissions.find(p => p.name === 'edit_risk_assessments')!.id },
+          { id: permissions.find(p => p.name === 'view_vendors')!.id },
+          { id: permissions.find(p => p.name === 'view_tools')!.id }
+        ]
+      }
+    }
+  });
+
+  const vendorManagerRole = await prisma.role.create({
+    data: {
+      name: 'vendor_manager',
+      description: 'Vendor management specialist',
+      permissions: {
+        connect: [
+          { id: permissions.find(p => p.name === 'view_dashboards')!.id },
+          { id: permissions.find(p => p.name === 'view_vendors')!.id },
+          { id: permissions.find(p => p.name === 'create_vendors')!.id },
+          { id: permissions.find(p => p.name === 'edit_vendors')!.id },
+          { id: permissions.find(p => p.name === 'view_vendor_assessments')!.id },
+          { id: permissions.find(p => p.name === 'manage_vendor_relationships')!.id },
+          { id: permissions.find(p => p.name === 'view_tools')!.id }
+        ]
+      }
+    }
+  });
+
+  const complianceOfficerRole = await prisma.role.create({
+    data: {
+      name: 'compliance_officer',
+      description: 'Compliance and audit specialist',
+      permissions: {
+        connect: [
+          { id: permissions.find(p => p.name === 'view_dashboards')!.id },
+          { id: permissions.find(p => p.name === 'view_risk_assessments')!.id },
+          { id: permissions.find(p => p.name === 'view_compliance_reports')!.id },
+          { id: permissions.find(p => p.name === 'generate_compliance_reports')!.id },
+          { id: permissions.find(p => p.name === 'view_audit_trails')!.id },
+          { id: permissions.find(p => p.name === 'manage_compliance_settings')!.id },
+          { id: permissions.find(p => p.name === 'view_reports')!.id }
+        ]
+      }
+    }
+  });
+
+  const executiveRole = await prisma.role.create({
+    data: {
+      name: 'executive',
+      description: 'Executive with oversight access',
+      permissions: {
+        connect: [
+          { id: permissions.find(p => p.name === 'view_dashboards')!.id },
+          { id: permissions.find(p => p.name === 'view_risk_assessments')!.id },
+          { id: permissions.find(p => p.name === 'view_compliance_reports')!.id },
+          { id: permissions.find(p => p.name === 'view_audit_trails')!.id },
+          { id: permissions.find(p => p.name === 'view_reports')!.id },
+          { id: permissions.find(p => p.name === 'manage_users')!.id }
+        ]
+      }
+    }
+  });
+
+  const readonlyRole = await prisma.role.create({
+    data: {
+      name: 'readonly',
+      description: 'Read-only access for viewing',
+      permissions: {
+        connect: [
+          { id: permissions.find(p => p.name === 'view_dashboards')!.id },
+          { id: permissions.find(p => p.name === 'view_risk_assessments')!.id },
+          { id: permissions.find(p => p.name === 'view_compliance_reports')!.id },
+          { id: permissions.find(p => p.name === 'view_reports')!.id }
+        ]
+      }
+    }
+  });
+
+  // Hash passwords for demo users
+  const hashedPassword = await bcrypt.hash('admin123', 12);
+  const analystPassword = await bcrypt.hash('analyst123', 12);
+  const vendorPassword = await bcrypt.hash('vendor123', 12);
+
+  // Create Users with Profiles
+  const adminUser = await prisma.user.create({
+    data: {
+      email: 'admin@tpdp.com',
+      password: hashedPassword,
+      isActive: true,
+      roleId: adminRole.id,
+      userProfile: {
+        create: {
+          firstName: 'System',
+          lastName: 'Administrator',
+          phone: '+1-555-0001'
+        }
+      }
+    }
+  });
+
+  const analystUser = await prisma.user.create({
+    data: {
+      email: 'analyst@tpdp.com',
+      password: analystPassword,
+      isActive: true,
+      roleId: riskAnalystRole.id,
+      userProfile: {
+        create: {
+          firstName: 'Risk',
+          lastName: 'Analyst',
+          phone: '+1-555-0002'
+        }
+      }
+    }
+  });
+
+  const vendorUser = await prisma.user.create({
+    data: {
+      email: 'vendor@tpdp.com',
+      password: vendorPassword,
+      isActive: true,
+      roleId: vendorManagerRole.id,
+      userProfile: {
+        create: {
+          firstName: 'Vendor',
+          lastName: 'Manager',
+          phone: '+1-555-0003'
+        }
+      }
+    }
+  });
 
   // Create ventures from our analysis
   const ventures = [
@@ -78,167 +385,6 @@ async function main() {
       timeline: '8 months to market dominance',
       repository: 'https://github.com/ddevaix-commits/tprm-monitor-platform',
       language: 'TypeScript'
-    },
-    {
-      name: 'vendorhub-stage2-complete',
-      description: 'VendorHub Platform - Stage 2 AI Engine Complete Implementation',
-      category: 'Vendor & Risk Management',
-      stage: 'growth',
-      maturity: 85,
-      priority: 'high',
-      status: 'active',
-      problemWorld: 'Enterprises operate with vendor data scattered across 50+ systems, creating dangerous blind spots.',
-      newWorld: 'Every vendor relationship is visible, understood, and optimized through a single intelligence platform.',
-      valueUnlock: 'Billions in cost savings and risk prevention through vendor optimization.',
-      originStory: 'Watching enterprises make million-dollar decisions based on incomplete vendor information.',
-      deepCapability: 'Data integration, enterprise sales, and procurement expertise.',
-      unfairAdvantage: 'Proprietary vendor data aggregation and analysis engine.',
-      unlockFactor: 'Digital transformation accelerating vendor ecosystem complexity.',
-      inevitability: 'Procurement becoming strategic rather than tactical.',
-      urgencyTrigger: 'Every month of delay means more vendor data silos get built.',
-      marketSize: '$20B vendor intelligence market',
-      fundingNeed: '$2M for enterprise expansion',
-      timeline: '6 months to category leadership',
-      repository: 'https://github.com/ddevaix-commits/vendorhub-stage2-complete',
-      language: 'TypeScript'
-    },
-    {
-      name: 'lens',
-      description: 'A platform for bringing focus and clarity to expertise matching within organizations',
-      category: 'Business & Networking',
-      stage: 'prototype',
-      maturity: 45,
-      priority: 'medium',
-      status: 'active',
-      problemWorld: '80% of organizational expertise is trapped in people\'s heads, inaccessible when needed most.',
-      newWorld: 'Every expert\'s knowledge is captured, categorized, and instantly available to those who need it.',
-      valueUnlock: 'Massive productivity gains through knowledge accessibility and collaboration.',
-      originStory: 'Working in organizations where brilliant people couldn\'t find each other to solve critical problems.',
-      deepCapability: 'Expertise in organizational psychology, AI, and collaboration design.',
-      unfairAdvantage: 'Proprietary expertise mapping that connects people based on real capability, not job titles.',
-      unlockFactor: 'Remote work has made expertise visibility critical while AI can now understand and categorize human expertise.',
-      inevitability: 'Companies competing on expertise rather than capital.',
-      urgencyTrigger: 'Great resignation has made expertise retention urgent.',
-      marketSize: '$15B expertise management market',
-      fundingNeed: '$300K for MVP completion',
-      timeline: '5 months to product-market fit',
-      repository: 'https://github.com/ddevaix-commits/lens',
-      language: 'TypeScript'
-    },
-    {
-      name: 'ai-teacher-copilot',
-      description: 'AI-powered teacher assistant system for education automation',
-      category: 'Education & Learning',
-      stage: 'prototype',
-      maturity: 40,
-      priority: 'medium',
-      status: 'active',
-      problemWorld: 'Teachers spend 70% of time on administration, leaving 30% for actual teaching and personalization.',
-      newWorld: 'Every teacher has an AI copilot that handles administration while they focus on inspiring students.',
-      valueUnlock: 'Trillions in economic productivity through better-educated populations.',
-      originStory: 'Watching brilliant teachers burn out from administrative overload while students suffered from lack of personalization.',
-      deepCapability: 'Education technology expertise and AI system design.',
-      unfairAdvantage: 'Deep understanding of teacher workflows and student learning patterns.',
-      unlockFactor: 'Teacher shortages are reaching crisis levels while AI has become sophisticated enough to handle educational tasks.',
-      inevitability: 'Education technology moving from content delivery to personalization.',
-      urgencyTrigger: 'Every month of delay means more teachers leave the profession.',
-      marketSize: '$40B education technology market',
-      fundingNeed: '$250K for MVP development',
-      timeline: '7 months to market entry',
-      repository: 'https://github.com/ddevaix-commits/ai-teacher-copilot',
-      language: 'TypeScript'
-    },
-    {
-      name: 'pokerface-networking',
-      description: 'AI-powered strategic networking platform with gamification',
-      category: 'Business & Networking',
-      stage: 'idea',
-      maturity: 15,
-      priority: 'medium',
-      status: 'active',
-      problemWorld: 'Professionals waste hours on networking events with 1% success rates while missing crucial connections.',
-      newWorld: 'Every professional interaction is optimized by AI that understands relationship potential and value.',
-      valueUnlock: 'Billions in business value through better professional connections.',
-      originStory: 'Watching brilliant professionals fail because they couldn\'t navigate relationship-building effectively.',
-      deepCapability: 'Social psychology, business development, and platform design expertise.',
-      unfairAdvantage: 'Proprietary relationship value assessment algorithms.',
-      unlockFactor: 'Remote work has made networking more challenging while AI can now understand professional relationship patterns.',
-      inevitability: 'Career success becoming dependent on network quality.',
-      urgencyTrigger: 'Traditional networking is dying, strategic networking is emerging.',
-      marketSize: '$30B professional networking market',
-      fundingNeed: '$150K for prototype development',
-      timeline: '9 months to MVP launch',
-      repository: 'https://github.com/ddevaix-commits/pokerface-networking',
-      language: 'TypeScript'
-    },
-    {
-      name: 'curriculum-alignment',
-      description: 'Advanced AI-Powered Curriculum Management System',
-      category: 'Education & Learning',
-      stage: 'prototype',
-      maturity: 35,
-      priority: 'medium',
-      status: 'active',
-      problemWorld: 'Educational content is scattered and misaligned, leaving learners confused and discouraged.',
-      newWorld: 'Every learning journey is perfectly sequenced and personalized to ensure understanding and mastery.',
-      valueUnlock: 'Massive improvement in learning outcomes and educational efficiency.',
-      originStory: 'Seeing students fail not from lack of intelligence, but from poorly sequenced learning materials.',
-      deepCapability: 'Curriculum design, educational psychology, and content management expertise.',
-      unfairAdvantage: 'Proprietary learning sequence optimization algorithms.',
-      unlockFactor: 'Online learning has exploded while AI can now understand and optimize learning sequences.',
-      inevitability: 'Education moving from content delivery to learning science.',
-      urgencyTrigger: 'Every day of misalignment means more learners give up.',
-      marketSize: '$25B educational content market',
-      fundingNeed: '$200K for MVP development',
-      timeline: '6 months to market validation',
-      repository: 'https://github.com/ddevaix-commits/curriculum-alignment',
-      language: 'TypeScript'
-    },
-    {
-      name: 'uae-events-hub',
-      description: 'Complete events management platform for UAE with AI-powered features',
-      category: 'Events & Regional',
-      stage: 'idea',
-      maturity: 10,
-      priority: 'medium',
-      status: 'active',
-      problemWorld: 'Event attendees waste 50% of time on logistics and miss 80% of relevant connections and content.',
-      newWorld: 'Every event experience is personalized and optimized for maximum learning and connection.',
-      valueUnlock: 'Billions in productivity and opportunity cost savings through better events.',
-      originStory: 'Attending major events where the real value happened in hallways, not sessions.',
-      deepCapability: 'Event management, regional business development, and platform design expertise.',
-      unfairAdvantage: 'Deep understanding of UAE market and event ecosystem.',
-      unlockFactor: 'UAE is positioning as global event hub while event technology is becoming intelligent.',
-      inevitability: 'Events becoming primary business development channel.',
-      urgencyTrigger: 'Major event season approaching with inadequate technology.',
-      marketSize: '$10B regional events market',
-      fundingNeed: '$100K for MVP development',
-      timeline: '4 months to regional launch',
-      repository: 'https://github.com/ddevaix-commits/uae-events-hub',
-      language: 'TypeScript'
-    },
-    {
-      name: 'arabic-tech-news-summarizer',
-      description: 'Advanced AI-powered Arabic Tech News Summarizer platform for technology professionals and decision makers',
-      category: 'Events & Regional',
-      stage: 'idea',
-      maturity: 20,
-      priority: 'medium',
-      status: 'active',
-      problemWorld: 'Arabic tech professionals drown in information while starving for actionable insights.',
-      newWorld: 'Every tech professional receives personalized, curated intelligence that drives better decisions.',
-      valueUnlock: 'Acceleration of technology adoption and innovation in Arabic-speaking markets.',
-      originStory: 'Watching brilliant Arabic-speaking professionals struggle with English-only tech information.',
-      deepCapability: 'Natural language processing, content curation, and regional market expertise.',
-      unfairAdvantage: 'Proprietary Arabic language technology understanding and curation algorithms.',
-      unlockFactor: 'Arabic NLP has matured while Arabic-speaking markets are experiencing tech booms.',
-      inevitability: 'Regional markets demanding localized tech intelligence.',
-      urgencyTrigger: 'Technology adoption accelerating without localized support.',
-      marketSize: '$5B regional tech media market',
-      fundingNeed: '$75K for prototype development',
-      timeline: '3 months to MVP launch',
-      repository: 'https://github.com/ddevaix-commits/arabic-tech-news-summarizer',
-      language: 'TypeScript'
     }
   ];
 
@@ -248,7 +394,11 @@ async function main() {
     });
   }
 
-  console.log('Database seeded successfully!');
+  console.log('Database seeded successfully with security data and ventures!');
+  console.log('Demo users created:');
+  console.log('- Admin: admin@tpdp.com / admin123');
+  console.log('- Risk Analyst: analyst@tpdp.com / analyst123');
+  console.log('- Vendor Manager: vendor@tpdp.com / vendor123');
 }
 
 main()
