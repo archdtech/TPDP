@@ -332,7 +332,8 @@ export default function ProjectSentinelHomepage() {
   // Navigation items
   const navigationItems = [
     { name: 'Dashboard', href: '/', icon: BarChart3 },
-    { name: 'Dashboards', href: '/dashboards', icon: BarChart3 },
+    { name: 'Buyers', href: '/buyers', icon: Users },
+    { name: 'Sellers', href: '/sellers', icon: Building2 },
     { name: 'Tools', href: '/tools', icon: Settings },
   ];
 
@@ -462,23 +463,25 @@ export default function ProjectSentinelHomepage() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-              <Button 
-                size="lg" 
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 text-lg transform hover:scale-105 transition-all duration-200 shadow-lg"
-                onClick={() => console.log('Fast Check clicked')}
-              >
-                <Timer className="h-5 w-5 mr-2 animate-spin-slow" />
-                Try Fast Check
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 text-lg transform hover:scale-105 transition-all duration-200"
-                onClick={() => console.log('Vendor Passport clicked')}
-              >
-                <Globe className="h-5 w-5 mr-2" />
-                Create Vendor Passport
-              </Button>
+              <Link href="/buyers">
+                <Button 
+                  size="lg" 
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 text-lg transform hover:scale-105 transition-all duration-200 shadow-lg"
+                >
+                  <Timer className="h-5 w-5 mr-2 animate-spin-slow" />
+                  Try Fast Check
+                </Button>
+              </Link>
+              <Link href="/sellers">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 text-lg transform hover:scale-105 transition-all duration-200"
+                >
+                  <Globe className="h-5 w-5 mr-2" />
+                  Create Vendor Passport
+                </Button>
+              </Link>
             </div>
             
             <div className="flex flex-wrap gap-6 justify-center text-sm">
@@ -512,6 +515,143 @@ export default function ProjectSentinelHomepage() {
           <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 120L60 110C120 100 180 80 240 70C300 60 360 60 420 65C480 70 540 80 600 85C660 90 720 90 780 85C840 80 900 70 960 65C1020 60 1080 60 1140 70C1200 80 1260 100 1320 110C1380 120 1440 120 1440 120V120H0V120Z" fill="white"/>
           </svg>
+        </div>
+      </section>
+
+      {/* Buyers & Sellers Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Two Sides of the TPRM Ecosystem
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Whether you're assessing vendors or showcasing your compliance, 
+              Project Sentinel provides the tools you need for efficient third-party risk management.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Buyers Card */}
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <CardHeader>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center">
+                    <Users className="h-8 w-8 text-emerald-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-2xl">For Buyers</CardTitle>
+                    <CardDescription className="text-lg">Enterprise Risk Management</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <p className="text-gray-600 leading-relaxed">
+                  Assess vendor risks in minutes, not weeks. Our AI-powered platform analyzes 
+                  security posture, compliance status, and financial stability to provide 
+                  comprehensive risk insights.
+                </p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Fast Risk Assessments</h4>
+                      <p className="text-sm text-gray-600">Get comprehensive vendor analysis in under 2 minutes</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">AI-Powered Insights</h4>
+                      <p className="text-sm text-gray-600">Explainable AI provides clear risk factors and recommendations</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Portfolio Management</h4>
+                      <p className="text-sm text-gray-600">Track and manage all vendor relationships in one place</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Continuous Monitoring</h4>
+                      <p className="text-sm text-gray-600">Real-time alerts for vendor status changes</p>
+                    </div>
+                  </div>
+                </div>
+
+                <Link href="/buyers">
+                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3">
+                    Start Assessing Vendors
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Sellers Card */}
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <CardHeader>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Building2 className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-2xl">For Sellers</CardTitle>
+                    <CardDescription className="text-lg">Vendor Passport & Compliance</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <p className="text-gray-600 leading-relaxed">
+                  Create your vendor passport once and share it with multiple buyers. 
+                  Showcase your compliance, security posture, and capabilities to 
+                  accelerate the vendor assessment process.
+                </p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Vendor Passport</h4>
+                      <p className="text-sm text-gray-600">Create a comprehensive compliance profile once</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Document Management</h4>
+                      <p className="text-sm text-gray-600">Secure storage and sharing of compliance documents</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Assessment Requests</h4>
+                      <p className="text-sm text-gray-600">Respond to buyer assessment requests efficiently</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Trust Building</h4>
+                      <p className="text-sm text-gray-600">Build credibility with verified compliance status</p>
+                    </div>
+                  </div>
+                </div>
+
+                <Link href="/sellers">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3">
+                    Create Your Vendor Passport
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 
