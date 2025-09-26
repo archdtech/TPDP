@@ -38,8 +38,7 @@ import {
   Filter
 } from 'lucide-react';
 
-// Import the mobile styles
-import './mobile-styles.css';
+
 
 interface Venture {
   id: string;

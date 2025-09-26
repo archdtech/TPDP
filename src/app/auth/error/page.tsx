@@ -1,20 +1,22 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, AlertTriangle, ArrowLeft } from "lucide-react";
 
-export default function AuthError() {
+function AuthErrorContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [error, setError] = useState<string | null>(null);
 
   // Get error from URL query parameters
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const error = urlParams.get("error");
-    console.log("Auth error:", error);
-  }, []);
+    const errorParam = searchParams.get("error");
+    setError(errorParam);
+    console.log("Auth error:", errorParam);
+  }, [searchParams]);
 
   const getErrorMessage = (error: string | null) => {
     switch (error) {
@@ -29,8 +31,6 @@ export default function AuthError() {
     }
   };
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const error = urlParams.get("error");
   const errorMessage = getErrorMessage(error);
 
   return (
@@ -118,5 +118,20 @@ export default function AuthError() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function AuthError() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-lg font-medium">Loading...</p>
+        </div>
+      </div>
+    }>
+      <AuthErrorContent />
+    </Suspense>
   );
 }
